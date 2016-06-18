@@ -16,7 +16,7 @@ from urllib.error import *
 import socket
 from socket import timeout
 from socket import gaierror
-from http.client import IncompleteRead
+import http
 
 ################################################################################
 
@@ -38,7 +38,7 @@ def download_edgar_period(quarters_list):
             os.makedirs(target_dir)
 
         # the accurate url to download the file
-        url = 'http://www.sec.gov/data/financial-statements/' + str(year)    \
+        url = 'https://www.sec.gov/data/financial-statements/' + str(year)    \
                + 'q' + str(quarter) + '.zip'
 
         # if the file doesn't exist yet download and save it
