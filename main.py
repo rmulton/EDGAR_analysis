@@ -1,18 +1,21 @@
-import download_from_edgar
-import unzip_files
-import user_interface
-import tools
+import download_data
+import period
+import unzip
+import parse_data
+from DataFolder import DataFolder
+import os
+STARTING_YEAR = 2015
+STARTING_QUARTER = 1
+ENDING_YEAR = 2016
+ENDING_QUARTER = 1
 
-##############################################################################################
+# Weird MSoft stuff
+os.chdir('C:\\Users\\robin\\Desktop\\edgar_analysis')
+directory = 'C:\\Users\\robin\\Desktop\\edgar_analysis\\edgar_data'
 
-# Step 0 : Ask the inputs
-from_year,from_quarter, to_year, to_quarter = user_interface.ask_inputs()
-list_of_quarter = tools.year_quarter_list(from_year,from_quarter, to_year, to_quarter)
+DataFolder = DataFolder(directory)
+period = period.period(STARTING_YEAR, STARTING_QUARTER, ENDING_YEAR, ENDING_QUARTER)
 
-##############################################################################################
-
-# Step 1: download the files, save it and unzip it
-download_from_edgar.download_edgar_period(list_of_quarter)
-unzip_files.unzip_everything()
-
-##############################################################################################
+download_data.edgar_download(period)
+unzip.unzip_everything(DataFolder.get_data_folder_path())
+parse_data.parse_all(DataFolder, period)
