@@ -1,25 +1,38 @@
+import pickle
+import argparse
 import download_data
 import period
 import unzip
 import parse_data
-from DataFolder import DataFolder
 import os
 import compute_ratios
 
-STARTING_YEAR = 2015
-STARTING_QUARTER = 1
-ENDING_YEAR = 2015
-ENDING_QUARTER = 2
+def main(periods, data_folder):
 
-def main(STARTING_YEAR, STARTING_QUARTER, ENDING_YEAR, ENDING_QUARTER, directory):
-    os.chdir('C:\\Users\\robin\\Desktop\\edgar_analysis')
-    directory = 'C:\\Users\\robin\\Desktop\\edgar_analysis\\edgar_data'
+    download_data.download_edgar(periods, data_folder)
+    unzip.unzip_everything(data_folder)
 
-    data_folder = DataFolder(directory)
-    required_period = period.period(STARTING_YEAR, STARTING_QUARTER, ENDING_YEAR, ENDING_QUARTER)
+    for el in os.listdir(data_folder):
+        if el[-4:]!='.zip':
+            quarter = os.path.join(data_folder, el)
+            print('Computing ratios for {}'.format(quarter))
+            quarter_folder = os.path.join(data_folder, quarter)
+            sub, num = parse_data.parse_quarter(quarter)
+            ratios = compute_ratios.compute_quarter(sub, num)
+            result_path = os.path.join(quarter, 'ratios.pickle')
+            pickle.dump(ratios, open(result_path, 'wb'))
+            print('Results saved in {}'.format(result_path))
 
-    download_data.edgar_download(required_period)
-    unzip.unzip_everything(data_folder.get_data_folder_path())
-    sub, num = parse_data.parse_all(data_folder, required_period)
-    assets, liabilities, liquidity = compute_ratios.compute_ratios(sub, num)
-    return assets, liabilities, liquidity
+if __name__=='__main__':
+    
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--starting', type=tuple, default=(2015, 1), help='(year, quarter) tuple from wich you want to download data')
+    parser.add_argument('--to', type=tuple, default=(2015, 4), help='(year, quarter) tuple until wich you want to download data')
+    parser.add_argument('--data_folder', type=str, default='data', help='Folder that is going to contain the data')
+
+    args = parser.parse_args()
+
+    periods = period.period(args.starting, args.to)
+
+    main(periods, args.data_folder)
