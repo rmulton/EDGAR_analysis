@@ -1,1 +1,2 @@
-edgar_data/*
+data/*
+__pycache__/*
